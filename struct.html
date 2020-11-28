@@ -2,9 +2,71 @@
   <body>
     <h1>Structure of a typical C project</h1>
     <p>When a project becomes too big to reasonably fit in one source file, it becomes necessary to split it into several files. In this article, we are going to discuss how to do that in a relatively standard manner.</p>
+    
     <h2>Example</h2>
+    <p>Let's start with an example. This small program consisting of three files (two source files and one header file) contains all the things that we are going to discuss.</p>
+    <h3>header.h</h3>
+    <pre>
+    #define SOMECONST 123               /* A symbolic constant */
+    #define SOMEMACRO(x) (1 + (x) * 2)  /* A macro definition */
+    extern int state;                   /* Extern for some variable */
+    int foo(int);                       /* A function prototype */
+    </pre>
+    <h3>funcs.c</h3>
+    <pre>
+    #include "header.h"                 /* Include our header */
+    
+    int state = 5;
+    
+    /*
+     * The foo() function which does absolutely nothing useful
+     */
+    int foo(int x)
+    {
+        int y;
+        
+        y = SOMECONST + SOMEMACRO(x) * 2 + state;
+        state = y;
+        
+        return y + 1;
+    }
+    </pre>
+    <h3>main.c</h3>
+    <pre>
+    #include &lt;stdio.h&gt;
+    #include "header.h"
+    
+    static int blah;                    /* A static variable */
+    
+    static int bar(int x)               /* A static function - no prototype */
+    {
+        blah += x * 3;
+        
+        return blah - 1; 
+    }
+    
+    int main(int argc, char **argv)
+    {
+        int ret, var;
+    
+        if (argc != 2)
+        {
+            fprintf(stderr, "bad number of arguments\n");
+            return 1;
+        }
+        ret = sscanf(argv[1], "%d", &amp;var);
+        if (ret != 1)
+        {
+            fprintf(stderr, "input is not a number\n");
+            return 2;
+        }
+        printf("For x = %d, foo(x) = %d and bar(x) = %d\n", x, foo(x), bar(x));
+        return 0;
+    }
+    </pre>
+    
     <h2>Levels of organization</h2>
-    <p>The term that is crucial and related to that&mdash;but not identical&mdash;is <em>scope</em>. Scope defines visibility of a particular object (e.g. a variable)&mdash;from where the object can be used.</p>
+    <p>C code is not flat&mdash;it has different layers, or levels or organization. The term that is crucial and related to that&mdash;but not identical&mdash;is <em>scope</em>. Scope defines visibility of a particular object (e.g. a variable)&mdash;from where the object can be used.</p>
     <p>Judging by scope, we can say that the C programming language has three levels organization, namely:</p>
     <dl>
       <dt>Block</dt>
@@ -16,17 +78,31 @@
       <dt>Program</dt>
       <dd>The program as a whole, i.e. all of its source files.</dd>
     </dl>
-    <p>Many other programming languages use a simpler global/local distinction; however, applying the same terms to C can lead to ambiguities. For example, when we say that some variable is &ldquo;local&rdquo;, do we mean that it is local to a translation unit or to a function? Although in most cases it would mean &ldquo;local to a function&rdquo;, both variants can be encountered in practice.</p>
+    <p>Many other programming languages use a simpler global/local distinction; however, applying the same terms to C can lead to ambiguities. For example, when we say that some variable is &ldquo;local&rdquo;, do we mean that it is local to a translation unit or to a function? Although in most cases it would mean &ldquo;local to a function&rdquo;, both variants can be encountered in practice. In this article, we will use the term &ldquo;local&rdquo; in the sense &ldquo;local to a function&rdquo; and, conversely, &ldquo;globall&rdquo; meaning &ldquo;not local to a function&rdquo;</p>
     <h2>Header files</h2>
-    <p><em>Header files</em> are files with the extension <tt>.h</tt> that contain definitions common to several source files. In header files, we usually put:</p>
+    <p><em>Header files</em> are files with the extension <code>.h</code> that contain definitions common to several source files. In header files, we usually put:</p>
     <ul>
       <li>Common symbolic constants and macros&mdash;in other words, <code>#define</code> directives.</li>
       <li>Function prototypes&mdash;each function that is to be accessed from various source files must have a prototype.
       <li>Declarations for program-level variables&mdash;each such variable must be declared in one of source files and must have a declaration preceded by <code>extern</code> in the header file.</li>
       <li>Type and structure definitions which will be used in several source files.</li>
     </ul>
-    <p>Now let's look at these things more closely.</p>
+    <p>In our example, these are <var>SOMECONST</var>, <var>SOMEMACRO()</var>, <var>state</var> and <var>foo()</var> respectively. Now let's take a closer look at these elements and see why it is necessary to put them in a header file.</p>
+    <ul>
+      <li>With symbolic constants and macros, it's rather obvious: if we are going to use them in several source files, they need to be in a place accessible from each of them, and a header file is the only reasonable way to achieve this.</li>
+      <li>More or less the same applies to variables, with one exception: if in case of <code>#define</code>'s we theoretically can just copy them in each file and it would work, we cannot do that for variables and other objects because the compiler would create a variable for each non-<code>extern</code> declaration, and these objects with the same names would result in a conflict during linking compiled sources together. On the other hand, variables declared as <code>extern</code> inform the compiler that there is such an object, but it will be created someplace else. Such declarations allow one to access the same object from different source files.</li>
+      <li>As for functions, the compiler needs to know what type the return value of a function is, and what its argument types are. Because the function itself is often in another source file (or already compiled, in case of library functions), the compiler cannot know this information about functions, and this is why prototypes are needed. Standard headers like <code>stdio.h</code>, for example, mostly contain prototypes for functions that the library contains.</li>
+    </ul>
+    
+    <h2>Choosing the right scope for an object</h2>
+    <p>People new to larger C projects often find it difficult to decide where exactly to put what. Here are some general guidelines:</p>
+    <ul>
+      <li>The rule of the thumb here is: use the narrowest possible scope. Use global variables sparingly.</li>
+      <li>If there is a possibility that your code will be executed on multiple threads, do not use global variables to save some data between function calls&mdash;if two instances of the same function are to be run in parallel, this will result in data corruption. The better way is to pass a pointer to the state variable, this way each thread would be able to have its own state and they would not conflict.</li>
+      <li>Place a group of functions that are related and are likely to be called together in the same file.</li>
+      <li>If some function is going to be used only by a few other functions, declare it as <code>static</code> and place it in the same file with those functions.</li>
+      <li>If it is absolutely necessary to share some value globally, usually it is better to declare it as <code>static</code> and provide functions to access it. This way, it is possible to check changes to that variable and, if necessary, make sure that the value is in valid range</li>
     <hr>
-    Copyright &copy; 2020 Steven R. S. Snelling. All rights reserved. Reproduction is prohibited.
+    Copyright &copy; 2020 Steven R. S. Snelling. All rights reserved. Reproduction is prohibited. The above information is subject to change without prior notice.
   <body>
 </html>
