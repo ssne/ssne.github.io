@@ -1,0 +1,32 @@
+<html>
+  <body>
+    <h1>Structure of a typical C project</h1>
+    <p>When a project becomes too big to reasonably fit in one source file, it becomes necessary to split it into several files. In this article, we are going to discuss how to do that in a relatively standard manner.</p>
+    <h2>Example</h2>
+    <h2>Levels of organization</h2>
+    <p>The term that is crucial and related to that&mdash;but not identical&mdash;is <em>scope</em>. Scope defines visibility of a particular object (e.g. a variable)&mdash;from where the object can be used.</p>
+    <p>Judging by scope, we can say that the C programming language has three levels organization, namely:</p>
+    <dl>
+      <dt>Block</dt>
+      <dd>By the term &ldquo;<em>block</em>&rdquo; we mostly mean functions.</dd>
+      
+      <dt>Translation unit</dt>
+      <dd>A particular source file which, in the terminology of the C standard, is called &ldquo;<em>translation unit</em>&rdquo;.</dd>
+      
+      <dt>Program</dt>
+      <dd>The program as a whole, i.e. all of its source files.</dd>
+    </dl>
+    <p>Many other programming languages use a simpler global/local distinction; however, applying the same terms to C can lead to ambiguities. For example, when we say that some variable is &ldquo;local&rdquo;, do we mean that it is local to a translation unit or to a function? Although in most cases it would mean &ldquo;local to a function&rdquo;, both variants can be encountered in practice.</p>
+    <h2>Header files</h2>
+    <p><em>Header files</em> are files with the extension <tt>.h</tt> that contain definitions common to several source files. In header files, we usually put:</p>
+    <ul>
+      <li>Common symbolic constants and macros&mdash;in other words, <code>#define</code> directives.</li>
+      <li>Function prototypes&mdash;each function that is to be accessed from various source files must have a prototype.
+      <li>Declarations for program-level variables&mdash;each such variable must be declared in one of source files and must have a declaration preceded by <code>extern</code> in the header file.</li>
+      <li>Type and structure definitions which will be used in several source files.</li>
+    </ul>
+    <p>Now let's look at these things more closely.</p>
+    <hr>
+    Copyright &copy; 2020 Steven R. S. Snelling. All rights reserved. Reproduction is prohibited.
+  <body>
+</html>
