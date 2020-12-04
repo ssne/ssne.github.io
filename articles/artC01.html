@@ -1,0 +1,177 @@
+<!doctype HTML>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title> Introduction to C projects </title>
+		<link rel="stylesheet" href="https://ssne.github.io/style.css" />
+		<script>var clicky_site_ids = clicky_site_ids || []; clicky_site_ids.push(101290154);</script>
+<script async src="//static.getclicky.com/js"></script>
+	</head>
+	<body>
+		<header class="navbar">
+			<nav>
+				<ul class="navbar">
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/index.html">Home</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/index.html">C tutorial</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/about.html">About us</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/contact.html">Contact</a></li>
+				</ul>
+			</nav>
+		</header>
+		<main>
+<h1> Introduction to C projects </h1>
+<p>Imagine a typical medium-size project. How do multiple files work together? To understand how a C project works, we need to understand compilation.</p>
+<p>Some things are much easier to show than to tell. Suppose we have a <code>.c</code> file (<code>1.c</code>) with some function <code>f()</code>:</p>
+<pre>
+#include &lt;math.h&gt;
+#include "1.h"
+double f(double x)
+{
+    return (1.0/sqrt(1.0 + pow(M_2_PI * (x / F0), 2 * n);
+}
+</pre>
+<p>We also have a header file <code>1.h</code>:
+<pre>
+double f(double);
+extern double n;
+#define F0 1000.0
+</pre></p>
+<p>And the main file:
+<pre>
+#include &lt;stdio.h&gt;
+#include "1.h"
+int main(void)
+{
+    n = 3.0;
+    fprintf(stdout, "%lf\n", f(2.0));
+    return 0;
+}
+</pre></p>
+<p>To make this code executable, we need to compile files separately and link them together, for example, like this:
+<pre>
+<samp>$</samp> <kbd>cc -c -o 1.o 1.c</kbd>
+<samp>$</samp> <kbd>cc -c -o main.o main.c</kbd>
+<samp>$</samp> <kbd>cc 1.o main.o -lm</kbd>
+</pre></p>
+<p>(Yes, I am aware that <code><kbd>cc main.c 1.c -lm</kbd></code> would achieve the same result; however, in bigger projects, this approach is not good enough. We will discuss why a bit later.)</p>
+<p>Let's see how it works. The first two commands are responsible for the compilation itself. The resulting files&mdash;<code>1.o</code> and <code>main.o</code>&mdash;are object files; they are compiled into machine code already, but they have missing links, thus incomplete. When you compile first file, the compiler has no idea where the variable <code>n</code> is; likewise, when you compile the second file, compiler doesn't know much about the <code>f()</code> function. When we compile to object files that's okay, but the compiler still needs to know what type those things are&mdash;and this is why we need header files.</p>
+<p>In header files, we put:</p>
+<ul>
+<li>Various <code>#define</code>'s, which will be used in different <code>.c</code> files (i.e. limits like <code>BSIZ</code>)</li>
+<li>function prototypes for functions that are called from different <code>.c</code> files</li>
+<li><code>extern</code>'s for variables that are accessed from multiple files. <code>extern</code> is like a function prototype, but for variables. In this simple example, <code>extern double n;</code> tells the compiler that there will be variable <code>n</code> of type <code>double</code>.  Again, they are needed only for global variables accessed from different functions.</li>
+</ul>
+<p>So you break your code into functions, group functions into <code>.c</code> files, and you have one or more <code>.h</code> files which act as a &ldquo;table of contents&rdquo; for your program.</p>
+<p>Old UNIX programs were compiled from individual files using shell scripts. It may be useful in some cases, but is no longer common. Now (for over fourty years), we have the <kbd>make</kbd> utility. It helps us to maintain programs.</p>
+<p>For the abovewritten code, a simple makefile would look like this:</p>
+<pre>
+all: main.o 1.o
+    cc main.o 1.o
+main.o: main.c
+    cc -c -o main.o main.c
+1.o: 1.c
+    cc -c -o 1.o 1.c
+</pre>
+<p>Makefiles are basically a description of dependencies. These two lines tell, "to build 'main.o', you need to have 'main.c', and if you do and it is newer than <code>main.o</code>, you should use 'cc -c -o main.o main.c' command to get new <code>main.o</code> from <code>main.c</code>"</p>
+<p>An important note: &ldquo;how to make this&rdquo; instructions should always start with tabulation character (<em>not</em> spaces), or <code>make</code> will stop with a rather counterintuitive and puzzling diagnostic message.</p>
+<p>General syntax of makefile:</p>
+<pre>
+what you make: what it should be made of
+    how you make it
+</pre></p>
+<p>Also, <code>make</code> supports variables. For example, on my machine (BSD), and I have Clang compiler installed as <code>cc</code>, but someone using my code might be using GCC. If we write makefile naively, we will have to change every "cc" to "gcc" to build my program on their machine. This is bad. So we define the compiler once:</p>
+<pre>
+CC=cc
+all: main.o 1.o
+    $(CC) main.o 1.o
+main.o: main.c
+    $(CC) -c -o main.o main.c
+1.o: 1.c
+    $(CC) -c -o 1.o 1.c
+</pre>
+<p>As a more sophisticated example, here is the simple (minimal) standard library I was writing for AVR microcontrollers: (link coming soon!). Let's have a look at the makefile of this library:</p>
+<!--Note that in this case, "&lt;stdio.h&gt;" is the file I wrote myself -- AVR has no standard library.-->
+<pre>
+LIBDIR=./lib
+INCDIR=./include
+OBJDIR=./obj
+MCU=atmega16
+CFLAGS=-Wall -std=c99 -fno-builtin -Os -DF_CPU=8000000UL -DBAUD=9600U -mmcu=$(MCU)
+all: libc
+COBJFILES=$(OBJDIR)/fprintf.o $(OBJDIR)/panic.o
+COBJFILES+=$(OBJDIR)/fputs.o $(OBJDIR)/fgets.o
+COBJFILES+=$(OBJDIR)/hal.o
+libc: fgets.o fprintf.o fputs.o panic.o hal.o
+    ar rc $(LIBDIR)/libc.a $(COBJFILES)
+    rm $(COBJFILES)
+fgets.o: src/libc/stdio/fgets.c 
+    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/fgets.o $&lt;
+fprintf.o: src/libc/stdio/fprintf.c
+    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/fprintf.o $&lt;
+fputs.o: src/libc/stdio/fputs.c
+    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/fputs.o $&lt;
+panic.o: src/libc/stdio/panic.c
+    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/panic.o $&lt;
+hal.o: src/libc/stdio/hal.c
+    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/hal.o $&lt;
+</pre>
+<p>On Windows, libraries are usually compiled/linked into DLL (dynamic link library) files and used dynamically, i.e. not during compilation and linking.</p>
+<p>On UNIX&rt; (and clones like Linux), libraries are implemented differently. Quite often (but not always so), libraries on UNIX are static: pieces from them are taken and placed into the executable file itself during linking. Functions that the library consists of are compiled into object files, and those object files are put in an archive using <code>ar</code>. You can see it in the following line of that makefile:
+<pre>
+ar rc $(LIBDIR)/libc.a $(COBJFILES)
+</pre>
+</p>
+<p>So when later someone (a library user) compiles his/her file like this:
+<pre>
+<samp>$</samp> <kbd>cc main.c -lc</kbd>
+</pre>
+the linker will look in standard locations for <code>libc.a</code>. Why <code>libc.a</code>? Because <code>.a</code> is the standard extension for libraries (from the word &ldquo;archive&rdquo;) and <code>lib</code> is the standard prefix. So if you use, for example, this line for compilation:
+<pre>
+<samp>$</samp> <kbd>cc main.c -lsomething</kbd>
+</pre>
+the linker will look for <code>libsomething.a</code>.</p>
+<p>So, the linker has found the library file. What it does next is that it looks which functions are needed to compile the current <code>.c</code> file, and it looks for those functions in object files in the library archive. If it finds the required  function in some object file, it will link that file to the program.</p>
+<p>A little explanation of the variables in the library makefile:</p>
+<ul>
+<li><code>LIBDIR</code>, <code>INCDIR</code>, <code>OBJDIR</code> are library, include file and object file directories.</li>
+<li><code>MCU</code> is the microcontroller model that the library is compiled for (AVR specific)</li>
+</ul>
+<p>Compiler flags, CFLAGS, may be interesting to some:</p>
+<ul>
+<li><code>-Wall</code> &mdash; show all warnings</li>
+<li><code>-std=c99</code> &mdash; code conforms to the ISO/IEC 9899:1999 standard</li>
+<li><code>-fno-builtin</code> &mdash; do not builtin functions</li>
+<li><code>-Os</code> &mdash; optimization for size (as opposed to optimization for speed)</li>
+<li><code>-DF_CPU=8000000UL</code> and <code>-DBAUD=9600U</code> are equivalent to adding <code>#define F_CPU=8000000UL</code> and <code>#define BAUD=9600U</code> to the code, respectively</li>
+<li><code>-mmcu=$(MCU)</code> &mdash; defines the target architecture we're building for</li>
+</ul>
+<p>As you can see, makefile variables are inserted into rules like this: <code>$(VARIABLE)</code>. <code>$&lt;<code> is a special variable that holds name of source file in question. That is, in a piece of makefile like this:
+<pre>
+1.o: 1.c
+    cc $&lt;
+</pre>
+will compile <code>1.c</code></p>
+<p>This is all for now. There's a lot more to say, of course, so there is going to be a continuation for this article.</p>
+<p>P.S. For those who are curious, the function <code>f()</code> describes the response of an <var>n</var><sup>th</sup> order Butterworth filter with &minus;3dB cutoff frequency <var>F0</var> at the frequency <var>x</var>.</p>
+		</main>
+		<footer>
+			<div>
+				<small>
+						&copy; 2020 Steven R. S. Snelling. All rights reserved. 
+						Reproduction prohibited. The information above is subject 
+						to change without prior notice.
+					<!--<ul>
+						<li>&copy; 2020 Steven R. S. Snelling. All rights reserved. 
+						Reproduction prohibited. The information above is subject to change without prior notice.</li>
+						<li><a href="terms.html">Terms</a></li>
+						<li><a href="#">Privacy</a></li>
+						<li><a href="#">Cookies</a></li>
+						<li><a href="#">Trademark</a></li>
+						<li><a href="#">Contact</a></li>
+						<li><a href="#">Sitemap</a></li>
+					</ul>-->
+				</small>
+			</div>
+		</footer>
+	</body>
+</html>
