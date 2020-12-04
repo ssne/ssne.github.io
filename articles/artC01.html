@@ -145,7 +145,7 @@ the linker will look for <code>libsomething.a</code>.</p>
 <li><code>-DF_CPU=8000000UL</code> and <code>-DBAUD=9600U</code> are equivalent to adding <code>#define F_CPU=8000000UL</code> and <code>#define BAUD=9600U</code> to the code, respectively</li>
 <li><code>-mmcu=$(MCU)</code> &mdash; defines the target architecture we're building for</li>
 </ul>
-<p>As you can see, makefile variables are inserted into rules like this: <code>$(VARIABLE)</code>. <code>$&lt;<code> is a special variable that holds name of source file in question. That is, in a piece of makefile like this:
+<p>As you can see, makefile variables are inserted into rules like this: <code>$(VARIABLE)</code>. <code>$&lt;</code> is a special variable that holds name of source file in question. That is, in a piece of makefile like this:
 <pre>
 1.o: 1.c
     cc $&lt;
