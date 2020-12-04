@@ -72,7 +72,7 @@ main.o: main.c
 1.o: 1.c
     cc -c -o 1.o 1.c
 </pre>
-<p>Makefiles are basically a description of dependencies. These two lines tell, "to build 'main.o', you need to have 'main.c', and if you do and it is newer than <code>main.o</code>, you should use 'cc -c -o main.o main.c' command to get new <code>main.o</code> from <code>main.c</code>"</p>
+<p>Makefiles are basically a description of dependencies. These two lines tell, &ldquo;to build <code>main.o</code>, you need to have <code>main.c</code>, and if you do and it is newer than <code>main.o</code>, you should use <code>cc -c -o main.o main.c</code> command to get new <code>main.o</code> from <code>main.c</code>&rdquo;</p>
 <p>An important note: &ldquo;how to make this&rdquo; instructions should always start with tabulation character (<em>not</em> spaces), or <code>make</code> will stop with a rather counterintuitive and puzzling diagnostic message.</p>
 <p>General syntax of makefile:</p>
 <pre>
