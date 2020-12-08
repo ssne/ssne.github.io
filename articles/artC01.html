@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8" />
-		<title> Introduction to C projects </title>
+		<title>Introduction to C projects</title>
 		<link rel="stylesheet" href="https://ssne.github.io/style.css" />
 		<script>var clicky_site_ids = clicky_site_ids || []; clicky_site_ids.push(101290154);</script>
 <script async src="//static.getclicky.com/js"></script>
@@ -19,7 +19,7 @@
 			</nav>
 		</header>
 		<main>
-<h1> Introduction to C projects </h1>
+<h1>Introduction to C projects</h1>
 <p>Imagine a typical medium-size project. How do multiple files work together? To understand how a C project works, we need to understand compilation.</p>
 <p>Some things are much easier to show than to tell. Suppose we have a <code>.c</code> file (<code>1.c</code>) with some function <code>f()</code>:</p>
 <pre>
@@ -73,13 +73,18 @@ main.o: main.c
     cc -c -o 1.o 1.c
 </pre>
 <p>Makefiles are basically a description of dependencies. These two lines tell, &ldquo;to build <code>main.o</code>, you need to have <code>main.c</code>, and if you do and it is newer than <code>main.o</code>, you should use <code>cc -c -o main.o main.c</code> command to get new <code>main.o</code> from <code>main.c</code>&rdquo;</p>
-<p>An important note: &ldquo;how to make this&rdquo; instructions should always start with tabulation character (<em>not</em> spaces), or <code>make</code> will stop with a rather counterintuitive and puzzling diagnostic message.</p>
+<p>An important note: &ldquo;how to make this&rdquo; instructions should always start with tabulation character (<em>not</em> spaces), or <code>make</code> will stop with a rather counterintuitive and puzzling diagnostic. For example, BSD <code>make</code> had this to say after a tab character was replaced by eight spaces:
+<pre><samp>
+make: "/usr/wd/tmp/makefile" line 19: Need an operator
+make: Fatal errors encountered -- cannot continue
+make: stopped in /usr/wd/tmp/minlibc
+</samp></pre></p>
 <p>General syntax of makefile:</p>
 <pre>
 what you make: what it should be made of
     how you make it
 </pre></p>
-<p>Also, <code>make</code> supports variables. For example, on my machine (BSD), and I have Clang compiler installed as <code>cc</code>, but someone using my code might be using GCC. If we write makefile naively, we will have to change every "cc" to "gcc" to build my program on their machine. This is bad. So we define the compiler once:</p>
+<p>Also, <code>make</code> supports variables. For example, on my machine (BSD), I have Clang compiler installed as <code>cc</code>, but someone using my code might be using GCC. If we write makefile naively, we will have to change every <code>cc</code> to <code>gcc</code> to build my program on their machine. So we define the compiler once:</p>
 <pre>
 CC=cc
 all: main.o 1.o
@@ -89,31 +94,32 @@ main.o: main.c
 1.o: 1.c
     $(CC) -c -o 1.o 1.c
 </pre>
-<p>As a more sophisticated example, here is the simple (minimal) standard library I was writing for AVR microcontrollers: (link coming soon!). Let's have a look at the makefile of this library:</p>
+<p>As a more sophisticated example, <a href="https://github.com/ssne/minlibc">here is a link to the repository</a> with an implementation of the minimal subset of the C standard library I was writing for AVR microcontrollers. Let's have a look at the makefile of this library:</p>
 <!--Note that in this case, "&lt;stdio.h&gt;" is the file I wrote myself -- AVR has no standard library.-->
 <pre>
-LIBDIR=./lib
-INCDIR=./include
-OBJDIR=./obj
+CC=avr-gcc
+LIBDIR=lib
+INCDIR=include
 MCU=atmega16
-CFLAGS=-Wall -std=c99 -fno-builtin -Os -DF_CPU=8000000UL -DBAUD=9600U -mmcu=$(MCU)
+CFLAGS=-Wall -std=c99 -fno-builtin -Os -mcall-prologues 
+CFLAGS+=-DF_CPU=8000000UL -DBAUD=9600U -mmcu=$(MCU) -I$(INCDIR)
 all: libc
-COBJFILES=$(OBJDIR)/fprintf.o $(OBJDIR)/panic.o
-COBJFILES+=$(OBJDIR)/fputs.o $(OBJDIR)/fgets.o
-COBJFILES+=$(OBJDIR)/hal.o
-libc: fgets.o fprintf.o fputs.o panic.o hal.o
-    ar rc $(LIBDIR)/libc.a $(COBJFILES)
-    rm $(COBJFILES)
+COBJFILES=fprintf.o panic.o fputs.o fgets.o hal.o
+libc: $(COBJFILES)
+	ar rc $(LIBDIR)/libc.a $(COBJFILES)
 fgets.o: src/libc/stdio/fgets.c 
-    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/fgets.o $&lt;
+	$(CC) $(CFLAGS) -c $&lt;
 fprintf.o: src/libc/stdio/fprintf.c
-    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/fprintf.o $&lt;
+	$(CC) $(CFLAGS) -c $&lt;
 fputs.o: src/libc/stdio/fputs.c
-    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/fputs.o $&lt;
+	$(CC) $(CFLAGS) -c $&lt;
 panic.o: src/libc/stdio/panic.c
-    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/panic.o $&lt;
+	$(CC) $(CFLAGS) -c $&lt;
 hal.o: src/libc/stdio/hal.c
-    $(CC) -I$(INCDIR) $(CFLAGS) -c -o $(OBJDIR)/hal.o $&lt;
+	$(CC) $(CFLAGS) -c $&lt;
+.PHONY: clean
+clean:
+	-rm *.o $(LIBDIR)/libc.a
 </pre>
 <p>On Windows, libraries are usually compiled/linked into DLL (dynamic link library) files and used dynamically, i.e. not during compilation and linking.</p>
 <p>On UNIX&rt; (and clones like Linux), libraries are implemented differently. Quite often (but not always so), libraries on UNIX are static: pieces from them are taken and placed into the executable file itself during linking. Functions that the library consists of are compiled into object files, and those object files are put in an archive using <code>ar</code>. You can see it in the following line of that makefile:
@@ -133,10 +139,10 @@ the linker will look for <code>libsomething.a</code>.</p>
 <p>So, the linker has found the library file. What it does next is that it looks which functions are needed to compile the current <code>.c</code> file, and it looks for those functions in object files in the library archive. If it finds the required  function in some object file, it will link that file to the program.</p>
 <p>A little explanation of the variables in the library makefile:</p>
 <ul>
-<li><code>LIBDIR</code>, <code>INCDIR</code>, <code>OBJDIR</code> are library, include file and object file directories.</li>
+<li><code>LIBDIR</code> and <code>INCDIR</code> are library and include file directories.</li>
 <li><code>MCU</code> is the microcontroller model that the library is compiled for (AVR specific)</li>
 </ul>
-<p>Compiler flags, CFLAGS, may be interesting to some:</p>
+<p>Compiler flags, <code>CFLAGS</code>, may be interesting to some:</p>
 <ul>
 <li><code>-Wall</code> &mdash; show all warnings</li>
 <li><code>-std=c99</code> &mdash; code conforms to the ISO/IEC 9899:1999 standard</li>
