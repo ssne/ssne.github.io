@@ -72,17 +72,18 @@ main.o: main.c
 1.o: 1.c
     cc -c -o 1.o 1.c
 </pre>
-<p>Makefiles are basically a description of dependencies. These two lines tell, &ldquo;to build <code>main.o</code>, you need to have <code>main.c</code>, and if you do and it is newer than <code>main.o</code>, you should use <code>cc -c -o main.o main.c</code> command to get new <code>main.o</code> from <code>main.c</code>&rdquo;</p>
-<p>An important note: &ldquo;how to make this&rdquo; instructions should always start with tabulation character (<em>not</em> spaces), or <code>make</code> will stop with a rather counterintuitive and puzzling diagnostic. For example, BSD <code>make</code> had this to say after a tab character was replaced by eight spaces:
-<pre><samp>
-make: "/usr/wd/tmp/makefile" line 19: Need an operator
-make: Fatal errors encountered -- cannot continue
-make: stopped in /usr/wd/tmp/minlibc
-</samp></pre></p>
+<p>Makefiles are basically a description of dependencies. These lines tell things like &ldquo;to build <code>main.o</code>, you need to have <code>main.c</code>, and if you do and it is newer than <code>main.o</code>, you should use <code>cc -c -o main.o main.c</code> command to get new <code>main.o</code> from <code>main.c</code>&rdquo;</p>
+<p>The <code>make</code> utility checks timestamps and executes commands on files only if the existing file is older than one of the files it depends on. Projects may consist of dozens of files, or even thousands. (A quick look in the <code>/usr/src</code> directory of a virtual machine running FreeBSD 12.1-RELEASE-p11 revealed that it contains 20323 <code>.c</code> files.) Of course, recompiling each and every one of the source files if only one of them has been changed would waste a lot of time and resources, so this feature is crucial in larger projects. Getting back to <code>cc main.c 1.c -lm</code> and why such a naive approach is not optimal: the compiler would always be recompiling each file, even if it hasn't changed since the last compilation, which can take a lot of time.</p>
 <p>General syntax of makefile:</p>
 <pre>
 what you make: what it should be made of
     how you make it
+</pre></p>
+<p>An important note: &ldquo;how to make this&rdquo; instructions should always start with tabulation character (<em>not</em> spaces), or <code>make</code> will stop with a rather counterintuitive and puzzling diagnostic. For example, BSD <code>make</code> had this to say after a tab character was replaced by eight spaces:
+<pre>
+<samp>make: "/usr/wd/tmp/makefile" line 19: Need an operator
+make: Fatal errors encountered -- cannot continue
+make: stopped in /usr/wd/tmp/minlibc</samp>
 </pre></p>
 <p>Also, <code>make</code> supports variables. For example, on my machine (BSD), I have Clang compiler installed as <code>cc</code>, but someone using my code might be using GCC. If we write makefile naively, we will have to change every <code>cc</code> to <code>gcc</code> to build my program on their machine. So we define the compiler once:</p>
 <pre>
@@ -94,7 +95,7 @@ main.o: main.c
 1.o: 1.c
     $(CC) -c -o 1.o 1.c
 </pre>
-<p>As a more sophisticated example, <a href="https://github.com/ssne/minlibc">here is a link to the repository</a> with an implementation of the minimal subset of the C standard library I was writing for AVR microcontrollers. Let's have a look at the makefile of this library:</p>
+<p>As a more sophisticated example, <a href="https://github.com/ssne/minlibc">here is a link to the repository</a> with an implementation of the minimal subset of the C standard library that I was writing for AVR microcontrollers. Let's have a look at the makefile of this library:</p>
 <!--Note that in this case, "&lt;stdio.h&gt;" is the file I wrote myself -- AVR has no standard library.-->
 <pre>
 CC=avr-gcc
@@ -122,7 +123,7 @@ clean:
 	-rm *.o $(LIBDIR)/libc.a
 </pre>
 <p>On Windows, libraries are usually compiled/linked into DLL (dynamic link library) files and used dynamically, i.e. not during compilation and linking.</p>
-<p>On UNIX&rt; (and clones like Linux), libraries are implemented differently. Quite often (but not always so), libraries on UNIX are static: pieces from them are taken and placed into the executable file itself during linking. Functions that the library consists of are compiled into object files, and those object files are put in an archive using <code>ar</code>. You can see it in the following line of that makefile:
+<p>On UNIX&reg; (and clones like Linux), libraries are implemented differently. Quite often (but not always so), libraries on UNIX are static: pieces from them are taken and placed into the executable file itself during linking. Functions that the library consists of are compiled into object files, and those object files are put in an archive using <code>ar</code>. You can see it in the following line of that makefile:
 <pre>
 ar rc $(LIBDIR)/libc.a $(COBJFILES)
 </pre>
