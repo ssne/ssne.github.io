@@ -1,5 +1,5 @@
 <!doctype HTML>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<title>Introduction to C projects</title>
@@ -35,8 +35,8 @@ double f(double x)
 double f(double);
 extern double n;
 #define F0 1000.0
-</pre></p>
-<p>And the main file:
+</pre>
+<p>And the main file:</p>
 <pre>
 #include &lt;stdio.h&gt;
 #include "1.h"
@@ -46,8 +46,8 @@ int main(void)
     fprintf(stdout, "%lf\n", f(2.0));
     return 0;
 }
-</pre></p>
-<p>To make this code executable, we need to compile files separately and link them together, for example, like this:
+</pre>
+<p>To make this code executable, we need to compile files separately and link them together, for example, like this:</p>
 <pre>
 <samp>$</samp> <kbd>cc -c -o 1.o 1.c</kbd>
 <samp>$</samp> <kbd>cc -c -o main.o main.c</kbd>
@@ -78,13 +78,13 @@ main.o: main.c
 <pre>
 what you make: what it should be made of
     how you make it
-</pre></p>
-<p>An important note: &ldquo;how to make this&rdquo; instructions should always start with tabulation character (<em>not</em> spaces), or <code>make</code> will stop with a rather counterintuitive and puzzling diagnostic. For example, BSD <code>make</code> had this to say after a tab character was replaced by eight spaces:
+</pre>
+<p>An important note: &ldquo;how to make this&rdquo; instructions should always start with tabulation character (<em>not</em> spaces), or <code>make</code> will stop with a rather counterintuitive and puzzling diagnostic. For example, BSD <code>make</code> had this to say after a tab character was replaced by eight spaces:</p>
 <pre>
 <samp>make: "/usr/wd/tmp/makefile" line 19: Need an operator
 make: Fatal errors encountered -- cannot continue
 make: stopped in /usr/wd/tmp/minlibc</samp>
-</pre></p>
+</pre>
 <p>Also, <code>make</code> supports variables. For example, on my machine (BSD), I have Clang compiler installed as <code>cc</code>, but someone using my code might be using GCC. If we write makefile naively, we will have to change every <code>cc</code> to <code>gcc</code> to build my program on their machine. So we define the compiler once:</p>
 <pre>
 CC=cc
@@ -96,7 +96,7 @@ main.o: main.c
     $(CC) -c -o 1.o 1.c
 </pre>
 <p>As a more sophisticated example, <a href="https://github.com/ssne/minlibc">here is a link to the repository</a> with an implementation of the minimal subset of the C standard library that I was writing for AVR microcontrollers. Let's have a look at the makefile of this library:</p>
-<!--Note that in this case, "&lt;stdio.h&gt;" is the file I wrote myself -- AVR has no standard library.-->
+<!--Note that in this case, "&lt;stdio.h&gt;" is the file I wrote myself - AVR has no standard library.-->
 <pre>
 CC=avr-gcc
 LIBDIR=lib
@@ -123,20 +123,19 @@ clean:
 	-rm *.o $(LIBDIR)/libc.a
 </pre>
 <p>On Windows, libraries are usually compiled/linked into DLL (dynamic link library) files and used dynamically, i.e. not during compilation and linking.</p>
-<p>On UNIX&reg; (and clones like Linux), libraries are implemented differently. Quite often (but not always so), libraries on UNIX are static: pieces from them are taken and placed into the executable file itself during linking. Functions that the library consists of are compiled into object files, and those object files are put in an archive using <code>ar</code>. You can see it in the following line of that makefile:
+<p>On UNIX&reg; (and clones like Linux), libraries are implemented differently. Quite often (but not always so), libraries on UNIX are static: pieces from them are taken and placed into the executable file itself during linking. Functions that the library consists of are compiled into object files, and those object files are put in an archive using <code>ar</code>. You can see it in the following line of that makefile:</p>
 <pre>
 ar rc $(LIBDIR)/libc.a $(COBJFILES)
 </pre>
-</p>
-<p>So when later someone (a library user) compiles his/her file like this:
+<p>So when later someone (a library user) compiles his/her file like this:</p>
 <pre>
 <samp>$</samp> <kbd>cc main.c -lc</kbd>
 </pre>
-the linker will look in standard locations for <code>libc.a</code>. Why <code>libc.a</code>? Because <code>.a</code> is the standard extension for libraries (from the word &ldquo;archive&rdquo;) and <code>lib</code> is the standard prefix. So if you use, for example, this line for compilation:
+<p>the linker will look in standard locations for <code>libc.a</code>. Why <code>libc.a</code>? Because <code>.a</code> is the standard extension for libraries (from the word &ldquo;archive&rdquo;) and <code>lib</code> is the standard prefix. So if you use, for example, this line for compilation:</p>
 <pre>
 <samp>$</samp> <kbd>cc main.c -lsomething</kbd>
 </pre>
-the linker will look for <code>libsomething.a</code>.</p>
+<p>the linker will look for <code>libsomething.a</code>.</p>
 <p>So, the linker has found the library file. What it does next is that it looks which functions are needed to compile the current <code>.c</code> file, and it looks for those functions in object files in the library archive. If it finds the required  function in some object file, it will link that file to the program.</p>
 <p>A little explanation of the variables in the library makefile:</p>
 <ul>
@@ -152,12 +151,12 @@ the linker will look for <code>libsomething.a</code>.</p>
 <li><code>-DF_CPU=8000000UL</code> and <code>-DBAUD=9600U</code> are equivalent to adding <code>#define F_CPU=8000000UL</code> and <code>#define BAUD=9600U</code> to the code, respectively</li>
 <li><code>-mmcu=$(MCU)</code> &mdash; defines the target architecture we're building for</li>
 </ul>
-<p>As you can see, makefile variables are inserted into rules like this: <code>$(VARIABLE)</code>. <code>$&lt;</code> is a special variable that holds name of source file in question. That is, in a piece of makefile like this:
+<p>As you can see, makefile variables are inserted into rules like this: <code>$(VARIABLE)</code>. <code>$&lt;</code> is a special variable that holds name of source file in question. That is, in a piece of makefile like this:</p>
 <pre>
 1.o: 1.c
     cc $&lt;
 </pre>
-will compile <code>1.c</code></p>
+<p>will compile <code>1.c</code></p>
 <p>This is all for now. There's a lot more to say, of course, so there is going to be a continuation for this article.</p>
 <p>P.S. For those who are curious, the function <code>f()</code> describes the response of an <var>n</var><sup>th</sup> order Butterworth filter with &minus;3dB cutoff frequency <var>F0</var> at the frequency <var>x</var>.</p>
 		</main>
