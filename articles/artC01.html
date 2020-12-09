@@ -2,6 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Introduction to C projects</title>
 		<link rel="stylesheet" href="https://ssne.github.io/style.css" />
 		<script>var clicky_site_ids = clicky_site_ids || []; clicky_site_ids.push(101290154);</script>
@@ -52,7 +53,7 @@ int main(void)
 <samp>$</samp> <kbd>cc -c -o 1.o 1.c</kbd>
 <samp>$</samp> <kbd>cc -c -o main.o main.c</kbd>
 <samp>$</samp> <kbd>cc 1.o main.o -lm</kbd>
-</pre></p>
+</pre>
 <p>(Yes, I am aware that <code><kbd>cc main.c 1.c -lm</kbd></code> would achieve the same result; however, in bigger projects, this approach is not good enough. We will discuss why a bit later.)</p>
 <p>Let's see how it works. The first two commands are responsible for the compilation itself. The resulting files&mdash;<code>1.o</code> and <code>main.o</code>&mdash;are object files; they are compiled into machine code already, but they have missing links, thus incomplete. When you compile first file, the compiler has no idea where the variable <code>n</code> is; likewise, when you compile the second file, compiler doesn't know much about the <code>f()</code> function. When we compile to object files that's okay, but the compiler still needs to know what type those things are&mdash;and this is why we need header files.</p>
 <p>In header files, we put:</p>
