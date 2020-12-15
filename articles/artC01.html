@@ -123,7 +123,7 @@ hal.o: src/libc/stdio/hal.c
 clean:
 	-rm *.o $(LIBDIR)/libc.a
 </pre>
-<p>On Windows, libraries are usually compiled/linked into DLL (dynamic link library) files and used dynamically, i.e. not during compilation and linking. If you use Visual C/C++ or MinGW to compile a &ldquo;hello, world&rdquo; program and then inspect the resulting executable, you will find that it takes the <code>printf</code> function from a DLL, usually <code>/Windows/System32/msvcrt.dll</code> (Microsoft Visual C Runtime) or a similar one.</p>
+<p>On Windows&reg;, libraries are usually compiled/linked into DLL (dynamic link library) files and used dynamically, i.e. not during compilation and linking. If you use Visual C/C++ or MinGW to compile a &ldquo;hello, world&rdquo; program and then inspect the resulting executable, you will find that it takes the <code>printf</code> function from a DLL, usually <code>/Windows/System32/msvcrt.dll</code> (Microsoft Visual C Runtime) or a similar one.</p>
 <p>On UNIX&reg; (and clones like Linux), however, libraries are implemented differently. Quite often (but not always so), libraries on UNIX are static: pieces from them are taken and placed into the executable file itself during linking. Functions that the library consists of are compiled into object files, and those object files are put in an archive using <code>ar</code>. You can see it in the following line of that makefile:</p>
 <pre>
 ar rc $(LIBDIR)/libc.a $(COBJFILES)
@@ -162,9 +162,8 @@ ar rc $(LIBDIR)/libc.a $(COBJFILES)
 <p>P.S. For those who are curious, the function <code>f()</code> describes the response of an <var>n</var><sup>th</sup> order Butterworth filter with &minus;3dB cutoff frequency <var>F0</var> at the frequency <var>x</var>.</p>
 		</main>
 		<footer>
-            &copy; 2020 Steven R. S. Snelling. All rights reserved. 
-			Reproduction prohibited. The information above is subject 
-			to change without prior notice.
+            &copy; 2020 Steven R. S. Snelling. All rights reserved. Reproduction prohibited.
+			The information above is subject to change without prior notice.
 		</footer>
 	</body>
 </html>

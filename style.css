@@ -23,7 +23,7 @@ footer {
     background-color: #FFFFFF;
 	display: block;
     font-size: 12px;
-    /*border-top: solid 1px #3F3F3F;*/
+    border-top: solid 2px #F5F5F5;
     color: #3F3F3F;
     position: fixed;
     left: 0;
@@ -43,11 +43,6 @@ footer li {
 	float: none;
 	width: auto;
 	padding: 0.5em;
-}
-
-footer div {
-	padding: 16px;
-	padding-left: 30%;
 }
 
 footer a {
