@@ -1,0 +1,45 @@
+<!doctype HTML>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>A word on standard C input/output</title>
+		<link rel="stylesheet" href="https://ssne.github.io/style.css" />
+		<script>var clicky_site_ids = clicky_site_ids || []; clicky_site_ids.push(101290154);</script>
+<script async src="//static.getclicky.com/js"></script>
+	</head>
+	<body>
+		<header class="navbar">
+			<nav>
+				<ul class="navbar">
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/index.html">Home</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/index.html">C tutorial</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/about.html">About us</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/contact.html">Contact</a></li>
+				</ul>
+			</nav>
+		</header>
+		<main>
+<h1>A word on standard C input/output</h1>
+<p>The C programming language provides convenient and powerful input/output facilities. One of the fundamental concepts related to that is <em>stream</em>&mdash;a (potentially infinite) sequence of characters.</p>
+<p>On UNIX and its derivatives and clones, everything can be thought of as a stream. Examples of this include opened files, devices and pseudodevices like <code>/dev/random</code>, which returns as many random numbers as a program reading from it reads or <code>/dev/null</code> which reads and discards every byte written to it.</p> 
+<p>On Windows, <em>some</em> things can be thought of as streams&mdash;this is legacy of MS-DOS, which in turn borrowed the concept from UNIX. (Not many people know that, but Microsoft used to have its own derivative of UNIX called Xenix.) Examples of streams on Windows include opened files and <em>some</em> devices and pseudodevices, like <code>COM1:</code> (first RS-232 port), <code>NUL</code> (reads and discards data), <code>PRN:</code> (default printer). However, these device files are not a recommended way to access devices on Windows; the recommended practice is to use Windows API instead.</p>
+<p>In C programming, there are also three special streams:
+<ul>
+<li><code>stdin</code> is <em>standard input</em>. By default, it allows programs to obtain keyboard input from the terminal.</li>
+<li><code>stdout</code> is <em>standard output</em>. By default, everything written to it is displayed on the terminal.</li>
+<li><code>stderr</code> is <em>standard error</em>. Normally, it is also connected to the terminal and is used to display diagnostics.</li>
+</ul></p>
+<p>These streams are not necessarily connected to the terminal&mdash;they can be redirected. For example, like this:</p>
+<pre>
+<samp>$</samp> <kbd>./a.out &lt;in.txt &gt;out.txt</kbd>
+</pre>
+<p>In this example, the files <code>in.txt</code> and <code>out.txt</code> will act as <code>stdin</code> and <code>stdout</code> respectively for the program <code>a.out</code>. The stream <code>stderr</code> is normally used to display diagnostics (as opposed to normal program output) and is redirected separately. This way, if <code>stdout</code> is redirected and <code>stderr</code> is not, the user will still be notified (via terminal) that the program encountered some errors.</p>
+<p>To be continued...</p>
+		</main>
+		<footer>
+            &copy; 2020 Steven R. S. Snelling. All rights reserved. Reproduction prohibited.
+			The information above is subject to change without prior notice.
+		</footer>
+	</body>
+</html>

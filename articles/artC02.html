@@ -1,0 +1,62 @@
+<!doctype HTML>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>C variable declarations</title>
+		<link rel="stylesheet" href="https://ssne.github.io/style.css" />
+		<script>var clicky_site_ids = clicky_site_ids || []; clicky_site_ids.push(101290154);</script>
+<script async src="//static.getclicky.com/js"></script>
+	</head>
+	<body>
+		<header class="navbar">
+			<nav>
+				<ul class="navbar">
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/index.html">Home</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/index.html">C tutorial</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/about.html">About us</a></li>
+					<li class="navbar"><a class="navbar" href="https://ssne.github.io/contact.html">Contact</a></li>
+				</ul>
+			</nav>
+		</header>
+		<main>
+<h1>C variable declarations</h1>
+<p>Today, we are going to discuss the two kinds of keywords that can be added to variable declarations: <em>storage class specifiers</em> (<code>extern</code>, <code>register</code>, <code>auto</code> and <code>static</code>) and <em>type qualifiers</em> (<code>const</code>, <code>volatile</code>, <code>restrict</code>).</p>
+<p>Storage-class specifiers provide the compiler with the information regarding how a variable should be stored. There are four of them, five if one counts the two different and unrelated uses of the <code>static</code> keyword:
+<ul>
+<li><code>extern</code> informs the compiler that such a variable exists, but the compiler should not create it because it is to be created somewhere else. It is necessary in order to access global variables from another source file. In a way, <code>extern</code> declarations are analogous to function prototypes: both make the compiler aware of objects that are currently out of reach. It should be noted that <code>extern</code> declarations (and function prototypes for that matter) are often placed in header files.</li>
+<li><code>register</code> is a request to store a local variable only in a CPU register. Only applies to local variables. This is a <em>request</em> which means that the compiler may or may not honor it. Modern compilers often ignore such requests altogether and use registers however they see fit: compilers usually store most frequently used variables in registers and load/store them only occasionally in order to increase execution speed. Naturally, if a variable is declared as <code>register</code>, it is not possible to take address of that variable because if it does end up in a register, there will be no address to take.</li>
+<li><code>auto</code> tells the compiler that it can do whatever it pleases with a local variable outside that function. That is, such a variable is usually created when the function is entered, and is freed when the function is exited. On some architectures (like x86/i386/amd64) such variables end up being allocated in the stack and therefore are destroyed after the function call. As such, unless explicitly initialized, such variables have garbage values in the beginning. The important thing to note here is that no matter how appealing the description of the <code>auto</code> specifier is, it is seldom used: all the local variables are <code>auto</code> by default, so there is usually no need to explicitly declare them as <code>auto</code>.</li>
+<li><code>static</code> used with a local variable is the opposite of <code>auto</code>: the compiler is to allocate and initialize it only once and save it between function calls. They are initalized to zero by default. This specifier should be avoided if there is any possibility that the code will be executed recursively and/or on multiple threads.</li>
+<li><code>static</code> used with a global variable can be used to restrict the access of that variable to a single source file. Global variables declared as <code>static</code> are only accessible from the file they are declared in.
+</ul></p>
+Type qualifiers, on the other hand, describe content rather than storage of variables. There are three of them:
+<ul>
+<li><code>const</code>, contrary to the common misconception, does not mean that the variable cannot change (i.e. that the variable is, in fact, not a variable but a constant). It means that the variable will not be changed <em>by your code</em>. In some cases, the value can still be changed by something outside the program, e.g. hardware.</li>
+<li><code>volatile</code> can be used to force the compiler to reread the variable from memory every time it is accessed, thus avoiding caching in registers and/or processor cache. It is necessary when the variable can be changed at any time by another thread, an ISR (interrupt service routine) or hardware. For example, such a variable might be used as a flag variable that stops a cycle if it is set, and it can be set by a UNIX/POSIX signal or an ISR.</li>
+<li><code>restrict</code> applies only to pointers and means that the pointer in question is the only way to access the variable. It can be used with function arguments as a hint that the object the pointer refers to will not be changed from outside the function so that the compiler can optimize the access to the object.</li>
+</ul>
+<p>Type qualifiers and their combinations might be very confusing. For example, when used in a pointer declaration, does <code>const</code> apply to the pointer or the object it refers to, or both? The answer to that would be &ldquo;it depends&rdquo;. Consider the following:</p>
+<pre>
+const int *a = ... ;
+int * const b = ... ;
+</pre>
+On the first line, the <code>const</code> qualifier applies to the object itself, i.e. you can change the value of the pointer, but you cannot change the value of the variable it points to. Conversely, the second line declares a fixed pointer to a variable that can be changed.</p>
+<p>Generally, type qualifiers apply to the object the pointer refers to if they are placed before the type of the object, and to the pointer itself if they are placed between the asterisk and the variable name.</p>
+<p>Combining qualifiers might seem nonsensical at a glance, as in this example:<p>
+<pre>
+const volatile int * const vin = 044U;
+</pre>
+<p>However, it is a valid piece of code taken from an actual program. Put in a context, it makes perfect sense: it is a pointer to the hardware register containing the result of the last ADC (analog-to-digital) conversion. (This program was for an AVR microcontroller.) Because it is a read-only hardware register, it physically cannot be moved or changed by the software, but it can be changed at any moment by the converter hardware.</p>
+<p>Another curious example is the prototype for the <code>printf()</code> function:</p>
+<pre>
+int printf(const char * restrict format, ...);
+</pre>
+<p>The <code>const char</code> means that format string should not be changed, and the <code>* restrict</code> part means that this pointer is the sole way of accessing the format string. In other words, it should be safe to assume that the format string will not change in any way during the call. (In fact, creating format strings for <code>printf()</code>- or <code>scanf()</code>-like functions on runtime may lead to undefined behavior or security vulnerabilities.)</p>
+		</main>
+		<footer>
+            &copy; 2020 Steven R. S. Snelling. All rights reserved. Reproduction prohibited.
+			The information above is subject to change without prior notice.
+		</footer>
+	</body>
+</html>
