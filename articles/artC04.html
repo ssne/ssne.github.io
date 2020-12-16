@@ -23,7 +23,7 @@
 <h1>A word on standard C input/output</h1>
 <p>The C programming language provides convenient and powerful input/output facilities. One of the fundamental concepts related to that is <em>stream</em>&mdash;a (potentially infinite) sequence of characters.</p>
 <p>On UNIX and its derivatives and clones, everything can be thought of as a stream. Examples of this include opened files, devices and pseudodevices like <code>/dev/random</code>, which returns as many random numbers as a program reading from it reads or <code>/dev/null</code> which reads and discards every byte written to it.</p> 
-<p>On Windows, <em>some</em> things can be thought of as streams&mdash;this is legacy of MS-DOS, which in turn borrowed the concept from UNIX. (Not many people know that, but Microsoft used to have its own derivative of UNIX called Xenix.) Examples of streams on Windows include opened files and <em>some</em> devices and pseudodevices, like <code>COM1:</code> (first RS-232 port), <code>NUL</code> (reads and discards data), <code>PRN:</code> (default printer). However, these device files are not a recommended way to access devices on Windows; the recommended practice is to use Windows API instead.</p>
+<p>On Windows, <em>some</em> things can be thought of as streams&mdash;this is legacy of MS-DOS, which in turn borrowed the concept from UNIX. (Not many people know that, but Microsoft used to have its own derivative of UNIX called Xenix.) Examples of streams on Windows include opened files and <em>some</em> devices and pseudodevices, like <code>CON:</code> (console), <code>COM1:</code> (first RS-232 port), <code>NUL</code> (reads and discards data), <code>PRN:</code> (default printer). However, these device files are not a recommended way to access devices on Windows; the recommended practice is to use Windows API instead. However, <code>NUL</code> is still actively used in so-called &ldquo;batch files&rdquo;&mdash;shell scripts&mdash;to suppress output.</p>
 <p>In C programming, there are also three special streams:
 <ul>
 <li><code>stdin</code> is <em>standard input</em>. By default, it allows programs to obtain keyboard input from the terminal.</li>
@@ -35,7 +35,72 @@
 <samp>$</samp> <kbd>./a.out &lt;in.txt &gt;out.txt</kbd>
 </pre>
 <p>In this example, the files <code>in.txt</code> and <code>out.txt</code> will act as <code>stdin</code> and <code>stdout</code> respectively for the program <code>a.out</code>. The stream <code>stderr</code> is normally used to display diagnostics (as opposed to normal program output) and is redirected separately. This way, if <code>stdout</code> is redirected and <code>stderr</code> is not, the user will still be notified (via terminal) that the program encountered some errors.</p>
-<p>To be continued...</p>
+<p>The C standard library has a vast number of functions for stream manipulations, most of them have their prototypes in <code>&lt;stdio.h&gt;</code> (&ldquo;standard input/output&rdquo;) header. Here are the most important of them.</p>
+<pre>
+FILE *fopen(const char * restrict filename, const char * restrict mode);
+</pre>
+<p>This function opens the file given its filename and the desired mode (for reading, for writing, etc.). Access modes will be discussed in detail below. If <code>fopen()</code> fails to open the file (for example, if the file that is to be opened for reading does not exist), it returns a <code>NULL</code> pointer. If it succeeds, it returns a pointer to a <code>FILE</code> structure associated with the opened stream. The structure is implementation-dependent, and may contain pointers to functions performing the most basic IO on the stream, buffers for that stream, and/or additional information about it. It is usually not necessary to know the details of the underlying implementation, the important thing to understand about it is that it functions as a unique identifier for a particular stream (opened file). Outside the library itself, the sole purpose of that pointer is stream identification.
+<pre>
+FILE *freopen(const char * restrict filename, const char * restrict mode, FILE * restrict stream);
+</pre>
+<p>Analogous to <code>fopen()</code>, it opens a file, but reuses the provided stream, closing it if it exists.</p>
+<pre>
+int fclose(FILE *stream);
+</pre>
+<p>Closes a previously opened stream and returns <code>0</code> if it succeeded and <code>EOF</code> if it failed.</p>
+<pre>
+size_t fread(void * restrict ptr, size_t size, size_t nmemb, FILE * restrict stream);
+size_t fwrite(const void * restrict ptr, size_t size, size_t nmemb, FILE * restrict stream);
+</pre>
+<p>These functions read and write binary data. The stream they operate on is given as <code>*stream</code>, the data they read/write is pointed to by <code>*ptr</code>. They perform operations on <code>nmemb</code> objects, each <code>size</code> bytes long and return the number of objects they have successfully read/written.</p>
+<pre>
+int fprintf(FILE * restrict stream, const char * restrict format, ...);
+</pre>
+<p>Prints provided values (<code>...</code>&mdash;a list of arguments of arbitrary length) as text according to the <code>format</code> string to a stream. Format strings will be discussed later.</p>
+<pre>
+int fscanf(FILE * restrict stream, const char * restrict format, ...);
+</pre>
+<p>The inverse of <code>fprintf()</code>&mdash;this function reads a string of characters and extracts values from it according to the format string.</p>
+<pre>
+int printf(const char * restrict format, ...);
+int scanf(const char * restrict format, ...);
+</pre>
+<p>The same as above, but work only with <code>stdout</code> and <code>stdin</code>. In some implementations they are not even actual functions, but macros to <code>fprintf()</code> and <code>fscanf()</code>.</p>
+<pre>
+int snprintf(char * restrict s, size_t n, const char * restrict format, ...);
+int sprintf(char * restrict s, const char * restrict format, ...);
+</pre>
+<p>These work just like <code>fprintf()</code>, but write the resulting text string to the character array <code>s</code> instead of a stream. The difference between them is that <code>snprintf()</code> takes into account the (maximum) size <code>n</code> of the array <code>s</code>. It is therefore advisable to use <code>snprint()</code> instead of <code>sprintf()</code> to ensure that a buffer overflow would not happen.</p>
+<p>Getting back to file access modes, the following is an exhaustive list of possible useful combinations. The first column is the mode string supplied to <code>fopen()</code> or <code>freopen()</code>, the second is the access (for reading, for writing, or both), the third and the fourth are actions if file exists and if file doesn't exist, respectively.</p>
+<table>
+<tr><th>mode</th><th>access</th><th>exists?</th><th>doesn't exist?</th></tr>
+<tr><td><code>"r"</code></td><td>read-only</td><td>normal operation</td><td>fail</td></tr>
+<tr><td><code>"w"</code></td><td>write-only</td><td>delete it</td><td>create it</td></tr>
+<tr><td><code>"a"</code></td><td>write-only</td><td>write to its end</td><td>create it</td></tr>
+<tr><td><code>"r+"</code></td><td>read-write</td><td>normal operation</td><td>fail</td></tr>
+<tr><td><code>"w+"</code></td><td>read-write</td><td>delete it</td><td>create it</td></tr>
+<tr><td><code>"a+"</code></td><td>read-write</td><td>write to its end</td><td>create it</td></tr>
+<tr><td><code>"wx"</code></td><td>write-only</td><td>fail</td><td>create it</td></tr>
+<tr><td><code>"w+x"</code></td><td>read-write</td><td>fail</td><td>create it</td></tr>
+</table>
+<p>The ISO/IEC 9899:1990 (or its equivalent ANSI X3.159-1989) standard, commonly known as &ldquo;C90&rdquo;, &ldquo;C89&rdquo;, or &ldquo;ANSI C&rdquo;, also describes binary modes (<code>"rb"</code>, <code>"wb"</code>, <code>"ab"</code>, etc.); however, these are only supported for backward compatibility and have no effect now.</p>
+<p>The following is an incomplete list of <code>printf()</code>/<code>scanf()</code> format sequences and types of arguments they take:</p>
+<table>
+<tr><th>seq.</th><th>argument</th><th>commentary</th></tr>
+<tr><td><code>%f</code></td><td><code>float</code></td><td></td></tr>
+<tr><td><code>%lf</code></td><td><code>double</code></td><td></td></tr>
+<tr><td><code>%i</code>/<code>%d</code></td><td><code>int</code></td><td></td></tr>
+<tr><td><code>%u</code></td><td><code>unsigned int</code></td><td></td></tr>
+<tr><td><code>%li</code>/<code>%ld</code></td><td><code>unsigned long int</code></td><td></td></tr>
+<tr><td><code>%x</code></td><td><code>unsigned int</code></td><td>in lowercase hexadecimal form</td></tr>
+<tr><td><code>%X</code></td><td><code>unsigned int</code></td><td>in uppercase hexadecimal form</td></tr>
+<tr><td><code>%o</code></td><td><code>unsigned int</code></td><td>in octal form</td></tr>
+<tr><td><code>%c</code></td><td><code>char</code></td><td>a single character</td></tr>
+<tr><td><code>%lc</code></td><td><code>wchar_t</code></td><td>a single &ldquo;wide&rdquo; character</td></tr>
+<tr><td><code>%s</code></td><td><code>char *</code></td><td>a character string</td></tr>
+<tr><td><code>%ls</code></td><td><code>wchar_t *</code></td><td>a string of &ldquo;wide&rdquo; characters</td></tr>
+</table>
+<p>Specifying exact type of arguments may seem unimportant, but it <em>is</em> important. For example, on 32- and 64-bit machines, <code>printf("%d\n", 4000000000U);</code> will print <code><samp>-294967296</samp></code> instead of the expected four billion. Using <code>"%f"</code> indiscriminately for variables of both <code>float</code> and <code>double</code> types may work with <code>printf()</code>-like functions because on amd64-based machines, all <code>float</code> function arguments are promoted (converted) to <code>double</code>, this is not the case with <code>scanf()</code>-like functions (whose arguments are pointers, not variables themselves), so using <code>"%f"</code> will invariably result in data corruption or a crash.</p>
 		</main>
 		<footer>
             &copy; 2020 Steven R. S. Snelling. All rights reserved. Reproduction prohibited.
