@@ -19,7 +19,7 @@ footer {
     padding: 10px;
     text-align: center;
     background-color: #FFFFFF;
-	display: block;
+    display: block;
     font-size: 12px;
     border-top: solid 2px #F5F5F5;
     color: #3F3F3F;
@@ -29,24 +29,24 @@ footer {
 }
 
 footer ul {
-    list-style-type: none;
+	list-style-type: none;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    vertical-align: center;
+	vertical-align: center;
 }
 
 footer li {
-    display: inline-block;
-    float: none;
-    width: auto;
-    padding: 0.5em;
+	display: inline-block;
+	float: none;
+	width: auto;
+	padding: 0.5em;
 }
 
 footer a {
-    display: block;
-    color: white;
-    text-decoration: none;
+	display: block;
+	color: white;
+	text-decoration: none;
 }
 
 pre {
@@ -145,4 +145,3 @@ th {
 td {
     padding: 2px 5px 2px 5px;
 }
-

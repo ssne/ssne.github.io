@@ -37,11 +37,14 @@
 <p>In this example, the files <code>in.txt</code> and <code>out.txt</code> will act as <code>stdin</code> and <code>stdout</code> respectively for the program <code>a.out</code>. The stream <code>stderr</code> is normally used to display diagnostics (as opposed to normal program output) and is redirected separately. This way, if <code>stdout</code> is redirected and <code>stderr</code> is not, the user will still be notified (via terminal) that the program encountered some errors.</p>
 <p>The C standard library has a vast number of functions for stream manipulations, most of them have their prototypes in <code>&lt;stdio.h&gt;</code> (&ldquo;standard input/output&rdquo;) header. Here are the most important of them.</p>
 <pre>
-FILE *fopen(const char * restrict filename, const char * restrict mode);
+FILE *fopen(const char * restrict filename, 
+            const char * restrict mode);
 </pre>
 <p>This function opens the file given its filename and the desired mode (for reading, for writing, etc.). Access modes will be discussed in detail below. If <code>fopen()</code> fails to open the file (for example, if the file that is to be opened for reading does not exist), it returns a <code>NULL</code> pointer. If it succeeds, it returns a pointer to a <code>FILE</code> structure associated with the opened stream. The structure is implementation-dependent, and may contain pointers to functions performing the most basic IO on the stream, buffers for that stream, and/or additional information about it. It is usually not necessary to know the details of the underlying implementation, the important thing to understand about it is that it functions as a unique identifier for a particular stream (opened file). Outside the library itself, the sole purpose of that pointer is stream identification.
 <pre>
-FILE *freopen(const char * restrict filename, const char * restrict mode, FILE * restrict stream);
+FILE *freopen(const char * restrict filename, 
+              const char * restrict mode, 
+              FILE * restrict stream);
 </pre>
 <p>Analogous to <code>fopen()</code>, it opens a file, but reuses the provided stream, closing it if it exists.</p>
 <pre>
@@ -49,26 +52,43 @@ int fclose(FILE *stream);
 </pre>
 <p>Closes a previously opened stream and returns <code>0</code> if it succeeded and <code>EOF</code> if it failed.</p>
 <pre>
-size_t fread(void * restrict ptr, size_t size, size_t nmemb, FILE * restrict stream);
-size_t fwrite(const void * restrict ptr, size_t size, size_t nmemb, FILE * restrict stream);
+size_t fread(void * restrict ptr, 
+             size_t size, 
+             size_t nmemb, 
+             FILE * restrict stream);
+&nbsp;
+size_t fwrite(const void * restrict ptr, 
+              size_t size, 
+              size_t nmemb, 
+              FILE * restrict stream);
 </pre>
 <p>These functions read and write binary data. The stream they operate on is given as <code>*stream</code>, the data they read/write is pointed to by <code>*ptr</code>. They perform operations on <code>nmemb</code> objects, each <code>size</code> bytes long and return the number of objects they have successfully read/written.</p>
 <pre>
-int fprintf(FILE * restrict stream, const char * restrict format, ...);
+int fprintf(FILE * restrict stream, 
+            const char * restrict format, 
+            ...);
 </pre>
 <p>Prints provided values (<code>...</code>&mdash;a list of arguments of arbitrary length) as text according to the <code>format</code> string to a stream. Format strings will be discussed later.</p>
 <pre>
-int fscanf(FILE * restrict stream, const char * restrict format, ...);
+int fscanf(FILE * restrict stream, 
+           const char * restrict format, 
+           ...);
 </pre>
 <p>The inverse of <code>fprintf()</code>&mdash;this function reads a string of characters and extracts values from it according to the format string.</p>
 <pre>
 int printf(const char * restrict format, ...);
 int scanf(const char * restrict format, ...);
 </pre>
-<p>The same as above, but work only with <code>stdout</code> and <code>stdin</code>. In some implementations they are not even actual functions, but macros to <code>fprintf()</code> and <code>fscanf()</code>.</p>
+<p>The same as above, but work only with <code>stdout</code> and <code>stdin</code>. In some implementations, they are not even actual functions, but macros to <code>fprintf()</code> and <code>fscanf()</code>.</p>
 <pre>
-int snprintf(char * restrict s, size_t n, const char * restrict format, ...);
-int sprintf(char * restrict s, const char * restrict format, ...);
+int snprintf(char * restrict s, 
+             size_t n, 
+             const char * restrict format, 
+             ...);
+&nbsp;             
+int sprintf(char * restrict s, 
+            const char * restrict format, 
+            ...);
 </pre>
 <p>These work just like <code>fprintf()</code>, but write the resulting text string to the character array <code>s</code> instead of a stream. The difference between them is that <code>snprintf()</code> takes into account the (maximum) size <code>n</code> of the array <code>s</code>. It is therefore advisable to use <code>snprint()</code> instead of <code>sprintf()</code> to ensure that a buffer overflow would not happen.</p>
 <p>Getting back to file access modes, the following is an exhaustive list of possible useful combinations. The first column is the mode string supplied to <code>fopen()</code> or <code>freopen()</code>, the second is the access (for reading, for writing, or both), the third and the fourth are actions if file exists and if file doesn't exist, respectively.</p>
